@@ -1,10 +1,42 @@
 using DrWatson
 @quickactivate "Macro"
 
+# # load data
+# function GetHistogram(BirthOption, dt, NBin, NumIter)
+#   if mod(240, NBin) != 0 || NBin >= 240
+#     error("Need NBin to be a divisor of 240 and less than 240.")
+#   end
+#   load(["../../ZF_Migration_ABM/data/sims/MC/ABM_Histograms/ABM_Histogram_MonteCarlo_BirthOption=$(BirthOption)_runs=$(NumIter)_dt=$(dt)_T=150.mat"], "MC");
+# end
+#
+# function new_mesh = coarsen_histogram(BirthOption, dt, NBin, NumIter)
+#     if mod(240, NBin) ~= 0 || NBin >= 240
+#         error("Need NBin to be a divisor of 240 and less than 240.")
+#     end
+#     # Load the 240 x 240 histogram
+#     # CHECK SYNTAX/FILENAME!
+#     sio.loadmat(["../data/sims/MC/ABM_Histograms/ABM_Histogram_MonteCarlo_BirthOption=$(BirthOption)_runs=$(NumIter)_dt=$(dt)_T=150.mat"], "MC");
+#
+#     # # Coarsen the mesh based on the value of NBin
+#     # new_mesh = zeros(NBin, NBin, 151);
+#
+#     # g = 1./(Nbin/240);
+#
+#     # for k = 1:151
+#     #     for i = 1:Nbin
+#     #         for j = 1:Nbin
+#     #             new_mesh(i,j,k) = 1./g.^2.*sum( MC((1+g*(i-1)):g*i, (1+g*(j-1)):g*j, k), 'all');
+#     #         end
+#     #     end
+#     # end
+#     # % If you want to save the coarser mesh, do so.
+#     # if save_yes_no
+#     #     save([], 'new_mesh');
+#     # end
+#
+# end
 
-#########################################
-############### POTENTIALS ##############
-#########################################
+# Al's biologically informed parameters
 function ComputePotential(r, type)
   if type == "MelMel"
       Rmm = 0.00124 # (repulsion in mm^2/day of melanophores from melanophores)
@@ -33,9 +65,6 @@ function ComputePotential(r, type)
   end
 end
 
-#########################################
-##### EXTENDING MATRICES FOR FFT ########
-#########################################
 # For now this function only works for
 # square matrices of dimension n x n
 function extend(A, numrows)
@@ -72,6 +101,9 @@ function extend(A, numrows)
   return At
 end
 
+
+
+# plotting
 
 
 #########################################
@@ -254,13 +286,26 @@ function Convert60x60DataInto240x240Data( ABMData )
     return NewData
 end
 
+function Convert30x30DataInto240x240Data( ABMData )
+  NewData = zeros(240, 240, 151)
+  for k in 1:size(ABMData, 3)
+    for i in 0:240-1
+        for j in 0:240-1
+            NewData[i+1, j+1, k] = ABMData[floor(Int, i/8)+1, floor(Int, j/8)+1, k];
+        end
+    end
+  end
+  return NewData
+end
+
 function Convert240x240DataInto30x30Data( PDEData )
     NewData = zeros(size(PDEData, 1), 30, 30 )
     for k in 1:size(PDEData, 1)
       for i in 0:30-1
           for j in 0:30-1
-              NewData[k, i+1, j+1] = mean(PDEData[k, 8*i+1:8*(i+1), 8*j+1:8*(j+1)]);
-          end
+              # NewData[k, i+1, j+1] = mean(PDEData[k, 8*i+1:8*(i+1), 8*j+1:8*(j+1)]);
+              NewData[k, i+1, j+1] = sum((3.0/240).^2.0.*PDEData[k, 8*i+1:8*(i+1), 8*j+1:8*(j+1)])./(3.0/30).^2.0;
+            end
       end
     end
     return NewData

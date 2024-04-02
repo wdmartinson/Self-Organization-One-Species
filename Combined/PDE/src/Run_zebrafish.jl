@@ -12,8 +12,8 @@ include("../src/Parameters.jl");
 include("../src/Functions.jl");
 include("../src/Rhs_zebrafish.jl");
 
-function run_zebrafish_with_output(params) # returns a dictionary with simulation output
-      @unpack α, Δt, T, IC, L₁, L₂, N₁, N₂, ν, ϵ, R₀, Rl, Ru = params
+function run_zebrafish_with_output(params; parallel=false) # returns a dictionary with simulation output
+      @unpack α, Δt, T, IC, L₁, L₂, N₁, N₂, ν, ϵ = params
 
       # set up domain
       XMID, YMID, ~ = set_up_domain(L₁, L₂, N₁, N₂) # cell centres
@@ -33,11 +33,18 @@ function run_zebrafish_with_output(params) # returns a dictionary with simulatio
       WXXb = α[4] * ComputePotential(RINT, "XanXan")
 
       # Indicator on a ball of radius R₀:
-      IndB = (RINT .< R₀);
+      R₀ = 0.075 # From Shekar's code, TODO: Define R₀ in Parameters.jl?
+      Rl = 0.1
+      Ru = 0.2
+      # R₀ = 0.25
 
-      # Indicator on an annulus of radius Rl < r < Ru
       IndA = (Rl .< RINT .< Ru) # R_lower, R_uper
-      
+      IndB = (RINT .< R₀)
+
+
+
+
+
       # truncation of the potentials
       # CutOffIdx = 5
       CutOffIdx = minimum([20, N₁, N₂])
@@ -49,9 +56,10 @@ function run_zebrafish_with_output(params) # returns a dictionary with simulatio
       WMX = WMXb[m₁:m₂, m₁:m₂]
       WXM = WXMb[m₁:m₂, m₁:m₂]
       WXX = WXXb[m₁:m₂, m₁:m₂]
-      IndB = IndB[m₁:m₂, m₁:m₂];
+      IndB = IndB[m₁:m₂, m₁:m₂]
 
       # parameters passed to the solver
+      # p = [WMM, WMX, WXM, WXX, params]
       p = [WMM, WMX, WXM, WXX, params, IndB];
 
       NumTimeSteps = Int(ceil((T / Δt))) + 1 # Duncan changed this line so that the number of time steps that is output is consistent with the ABM
@@ -72,11 +80,15 @@ function run_zebrafish_with_output(params) # returns a dictionary with simulatio
             end
 
             # update pigment cells
-            t̄, ȳ = EEuStep(t̄, ȳ, p, Δt, rhs)
+            t̄, ȳ = EEuStep(t̄, ȳ, p, Δt, rhs; parallel=parallel)
       end
 
+      # Extract the data on a coarser PDE mesh also, to compare with ABM simulations:
+      CoarserMel = Convert240x240DataInto30x30Data( Mel )
+      CoarserXan = Convert240x240DataInto30x30Data( Xan )
+
       # save everything:
-      data = @dict t Mel Xan
+      data = @dict t Mel Xan CoarserMel CoarserXan
       # filename = savename(params, "bson");
       # save(datadir("sims", IC, filename), data)
       return data
@@ -86,7 +98,7 @@ end
 
 
 function run_zebrafish(params; parallel=false)
-      @unpack α, Δt, T, IC, L₁, L₂, N₁, N₂, ν, ϵ, R₀, Rl, Ru = params
+      @unpack α, Δt, T, IC, L₁, L₂, N₁, N₂, ν, ϵ = params
 
       # set up domain
       XMID, YMID, ~ = set_up_domain(L₁, L₂, N₁, N₂) # cell centres
@@ -106,10 +118,16 @@ function run_zebrafish(params; parallel=false)
       WXXb = α[4] * ComputePotential(RINT, "XanXan")
 
       # Indicator on a ball of radius R₀:
+      R₀ = 0.075 # From Shekar's code, TODO: Define R₀ in Parameters.jl
+      Rl = 0.1
+      Ru = 0.2
+      # R₀ = 0.25
+
+      IndA = (Rl .< RINT .< Ru) # R_lower, R_uper
       IndB = (RINT .< R₀)
 
-      # Indicator on an annulus of radius Rl < r < Ru
-      IndA = (Rl .< RINT .< Ru) # R_lower, R_uper
+
+
 
       # truncation of the potentials
       # CutOffIdx = 5
@@ -125,10 +143,11 @@ function run_zebrafish(params; parallel=false)
       IndB = IndB[m₁:m₂, m₁:m₂]
 
       # parameters passed to the solver
+      # p = [WMM, WMX, WXM, WXX, params]
       p = [WMM, WMX, WXM, WXX, params, IndB]
 
-      NumTimeSteps = Int(ceil((T / Δt))) + 1 # The number of time steps is consistent with the ABM
-      NumOutputs = Int(ceil((T / Δt) / ν)) + 1 # The number of time steps is consistent with the ABM
+      NumTimeSteps = Int(ceil((T / Δt))) + 1 # Duncan changed this line so that the number of time steps that is output is consistent with the ABM
+      NumOutputs = Int(ceil((T / Δt) / ν)) + 1 # Duncan changed this line so that the number of time steps that is output is consistent with the ABM
 
       t = Array{Float32}(undef, NumOutputs)
       Mel = Array{Float32}(undef, NumOutputs, 2 * N₁, 2 * N₂)
@@ -136,7 +155,7 @@ function run_zebrafish(params; parallel=false)
 
       j = 1 # output counter
       for i = 1:NumTimeSteps # ODE solver
-            if mod(i - 1, ν) == 0 # save output to array at times t = 0, νΔt, 2νΔt, ...
+            if mod(i - 1, ν) == 0 # Duncan changed this line so that the number of time steps that is output is consistent with the ABM
                   t[j] = t̄
                   Mel[j, :, :] = ȳ[1]
                   Xan[j, :, :] = ȳ[2]
@@ -156,3 +175,10 @@ function run_zebrafish(params; parallel=false)
       filename = savename(params, "bson")
       save(datadir("sims", IC, filename), data)
 end
+
+
+
+
+
+# img = testimage("mri")
+# imshow(img)

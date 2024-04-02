@@ -32,6 +32,30 @@ function LoadParametersWithAlpha(alphas)
 end
 
 # New function for nonlinear least squares:
+function LoadCombinedModelParameters(alphas, gammaM, gammaX, CmaxMel, CmaxXan, Ndart)
+    ParamsDict = Dict(
+    "L₁"            => 1.5,   # x-length
+    "L₂"            => 1.5,   # y-length
+    "N₁"            => 120,    # number of gridpoints (x-axis)
+    "N₂"            => 120,    # number of gridpoints (y-axis)
+    "ϵ"             => 0,     # cross-diffusion strength
+    "ν"             => 20,     # output fequency
+    "α"             => alphas, # scaling of amplitude of interact. potentials
+    "CmaxMel"       => CmaxMel, # 
+    "CminMel"       => 1.0,
+    "CmaxXan"       => CmaxXan, #
+    "CminXan"       => 1.0, #
+    "GrowthRateMel" => gammaM, #
+    "GrowthRateXan" => gammaX, #
+    "max_cpd"       => Ndart, #
+    "Δt"            => 0.05, # time step
+    "T"             => 150,  # final time
+    "IC"            => "MelBox", #"uniform", "MelBox", "CentredBlackStripe", "TwoStripes", "UniformPerturbed", "ABMData", "XanBox", "XanStripe", "OffsetRectangles", "ReplicationExptUniformPerturbed", "ReplicationExptPerturbedStripes", "UniformPerturbedWholeDomainMX", "CheckerboardBio", "TwoStripesMelOnly", "OffsetRectanglesMelOnly", "TwoStripesXanOnly", "OffsetRectanglesXanOnly"
+    );
+    return ParamsDict;
+end
+
+# New function for nonlinear least squares:
 function LoadParametersWithAlpha(αₘₘ, αₘₓ, αₓₘ, αₓₓ)
     ParamsDict = Dict(
     "L₁" => 1.5,   # x-length

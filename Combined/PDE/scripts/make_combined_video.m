@@ -5,18 +5,18 @@ end
 close all;
 
 %% Chose Ndart value to extract
-n = 5; % Nvals = [10, 25, 50, 100, 150];
+n = 3; % Nvals = [10, 25, 50, 100, 150];
 
 %% MelBox Data
-% load('../../ABM/melBox_birthMoveN150_ABMexample.mat')
+load('../../ABM/melBox_birthMoveN150_ABMexample.mat')
 
-% load("../../ABM/melBox_BirthMoveFixed.mat");
+load("../../ABM/melBox_BirthMoveFixed.mat");
 
 % load('../data/sims/MelBox/MelBox_Combined_PDE_N=10_c+=Theoretical.mat')
 
 % load('../data/sims/MelBox/MelBox_Combined_PDE_N=25_c+=Theoretical.mat')
 
-% load('../data/sims/MelBox/MelBox_Combined_PDE_N=50_c+=Theoretical.mat')
+load('../data/sims/MelBox/MelBox_Combined_PDE_N=50_c+=Theoretical.mat')
 
 % load('../data/sims/MelBox/MelBox_Combined_PDE_N=100_c+=Theoretical.mat')
 
@@ -24,9 +24,9 @@ n = 5; % Nvals = [10, 25, 50, 100, 150];
 
 
 %% OffsetRectanglesMelOnly Data
-load('../../ABM/melTwoBox_birthMoveN150_ABMexample.mat')
+% load('../../ABM/melTwoBox_birthMoveN150_ABMexample.mat')
 
-load("../../ABM/melTwoBox_BirthMoveFixed.mat");
+% load("../../ABM/melTwoBox_BirthMoveFixed.mat");
 
 % load('../data/sims/OffsetRectanglesMelOnly/OffsetRectanglesMelOnly_Combined_PDE_N=10_c+=Theoretical.mat')
 
@@ -36,7 +36,7 @@ load("../../ABM/melTwoBox_BirthMoveFixed.mat");
 
 % load('../data/sims/OffsetRectanglesMelOnly/OffsetRectanglesMelOnly_Combined_PDE_N=100_c+=Theoretical.mat')
 
-load('../data/sims/OffsetRectanglesMelOnly/OffsetRectanglesMelOnly_Combined_PDE_N=150_c+=Theoretical.mat')
+% load('../data/sims/OffsetRectanglesMelOnly/OffsetRectanglesMelOnly_Combined_PDE_N=150_c+=Theoretical.mat')
 
 
 %% Visualize Solutions
@@ -45,7 +45,7 @@ x = (stepBnd(2:end) + stepBnd(1:end-1))./2; % 0.1 mm spacing on the domain, step
 
 %% Total Melanophore Density Video
 folder_location = '../plots/';
-name = ['OffsetRectanglesMelOnly-N=',num2str(Nvals(n)),'-'];
+name = ['MelBox-N=',num2str(Nvals(n)),'-'];
 
 a_name = [name, 'ABM'];
 a = VideoWriter(a_name);
@@ -74,11 +74,11 @@ for i = 1:length(t)
     cbar = colorbar; colormap('parula');
     caxis([0 max(max(max(CoarserMel)))])
     hold on;
-    scatter(cellsM_example{i}(:,1), cellsM_example{i}(:,2), 10, 'k', 'filled')
+%     scatter(cellsM_example{i}(:,1), cellsM_example{i}(:,2), 10, 'k', 'filled')
     set(cbar, 'fontsize', 20, 'ticklabelinterpreter', 'latex')
     xlabel("$x$", 'Interpreter', 'latex', 'fontsize', 20)
     ylabel("$y$", 'Interpreter', 'latex', 'fontsize', 20)
-    set(get(gca, 'title'), 'string', ['ABM, $N = ', num2str(Nvals(n)), '$, $t = ', num2str(t(i)),'$'], 'interpreter', 'latex');
+    set(get(gca, 'title'), 'string', ['ABM, $N_{bin} = ', num2str(Nvals(n)), '$, $t = ', num2str(t(i)),'$'], 'interpreter', 'latex');
     set(gca, 'fontsize', 20, 'ticklabelinterpreter', 'latex', 'YDir', 'normal')
     axis square; grid on; hold off;
     drawnow;
@@ -89,11 +89,11 @@ for i = 1:length(t)
     cbar = colorbar; colormap('parula');
     caxis([0 max(max(max(CoarserMel)))])
     hold on;
-    scatter(cellsM_example{i}(:,1), cellsM_example{i}(:,2), 10, 'k', 'filled')
+%     scatter(cellsM_example{i}(:,1), cellsM_example{i}(:,2), 10, 'k', 'filled')
     set(cbar, 'fontsize', 20, 'ticklabelinterpreter', 'latex')
     xlabel("$x$", 'Interpreter', 'latex', 'fontsize', 20)
     ylabel("$y$", 'Interpreter', 'latex', 'fontsize', 20)
-    set(get(gca, 'title'), 'string', ['PDE, $N = ', num2str(Nvals(n)), '$, $t = ', num2str(t(i)),'$'], 'interpreter', 'latex');
+    set(get(gca, 'title'), 'string', ['PDE, $N_{bin} = ', num2str(Nvals(n)), '$, $t = ', num2str(t(i)),'$'], 'interpreter', 'latex');
     set(gca, 'fontsize', 20, 'ticklabelinterpreter', 'latex', 'YDir', 'normal')
     axis square; grid on; hold off;
     drawnow;
@@ -104,11 +104,11 @@ for i = 1:length(t)
     cbar = colorbar; colormap('cool');
     caxis([-100 250]) % For MelBox and OffsetRectanglesMelOnly cases
     hold on;
-    scatter(cellsM_example{i}(:,1), cellsM_example{i}(:,2), 10, 'k', 'filled')
+%     scatter(cellsM_example{i}(:,1), cellsM_example{i}(:,2), 10, 'k', 'filled')
     set(cbar, 'fontsize', 20, 'ticklabelinterpreter', 'latex')
     xlabel("$x$", 'Interpreter', 'latex', 'fontsize', 20)
     ylabel("$y$", 'Interpreter', 'latex', 'fontsize', 20)
-    set(get(gca, 'title'), 'string', ['ABM-PDE, $N = ', num2str(Nvals(n)), '$, $t = ', num2str(t(i)),'$'], 'interpreter', 'latex');
+    set(get(gca, 'title'), 'string', ['ABM-PDE, $N_{bin} = ', num2str(Nvals(n)), '$, $t = ', num2str(t(i)),'$'], 'interpreter', 'latex');
     set(gca, 'fontsize', 20, 'ticklabelinterpreter', 'latex', 'YDir', 'normal')
     axis square; grid on; hold off;
     drawnow;
